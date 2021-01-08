@@ -1,0 +1,40 @@
+hookfunction(game:GetService("ReplicatedStorage").modules.network.replicatePlayerAnimationSequence.FireServer,function(...) 
+    for i , v in pairs({...}) do
+        if v == 'replicatePlayerAnimationSequence' then 
+            print('blocked animation')
+            return 
+        end
+    end
+end)
+function dmg(v)
+    game:GetService("ReplicatedStorage").modules.network.fireEvent:FireServer("playerWillUseBasicAttack", game.Players.LocalPlayer)
+    for i = 1 , 2 , 1 do
+        game:GetService("ReplicatedStorage").modules.network.playerRequest_damageEntity:FireServer(v, game.Players.LocalPlayer.Character.PrimaryPart.Position, 'equipment')
+    end
+end
+function attack()
+    for i , v in pairs(workspace.placeFolders.entityManifestCollection:GetChildren()) do
+        if game.Players:FindFirstChild(v.Name) == nil then
+            if v.ClassName == 'Model' and v.PrimaryPart and v.PrimaryPart.Name == 'hitbox' and (v.PrimaryPart.Position-game.Players.LocalPlayer.Character.PrimaryPart.Position).magnitude <= 20 then
+                dmg(v.PrimaryPart)
+            end
+            if v.ClassName ~= 'Model' then
+                if (v.Position-game.Players.LocalPlayer.Character.PrimaryPart.Position).magnitude <= 20 then
+                    dmg(v)
+                end
+            end
+        end
+    end
+end
+coroutine.wrap(function()
+    while wait() do 
+        for i , v in pairs(game:GetService("Workspace").placeFolders.items:GetChildren()) do
+            if v.ClassName ~= 'Model' and (v.Position-game.Players.LocalPlayer.Character.PrimaryPart.Position).magnitude < 50 or v.ClassName == 'Model' and (v.PrimaryPart.Position-game.Players.LocalPlayer.Character.PrimaryPart.Position).magnitude < 50 then
+                game:GetService("ReplicatedStorage").modules.network.pickUpItemRequest:InvokeServer(v)
+            end
+        end
+    end
+end)()
+while wait() do
+    attack()
+end
